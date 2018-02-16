@@ -13,10 +13,11 @@
 #define OLED_RESET 0  // GPIO0
 Adafruit_SSD1306 display(OLED_RESET);
 
+#define langername longname
 // WiFi Parameters
 //**** Change setting for WIFI ******
-const char* ssid = "WIFI";
-const char* password = "PASSWORD";
+const char* ssid = "WIFI NAME";
+const char* password = "WIFI PASSWORD";
 
 void setup() {
 
@@ -25,7 +26,6 @@ void setup() {
   display.setTextColor(WHITE);
   display.setCursor(0,0);
   display.display();
-  
 
   Serial.begin(115200);
   WiFi.begin(ssid, password);
@@ -33,6 +33,12 @@ void setup() {
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
     Serial.println("Connecting...");
+    
+    display.print("Connected to");
+    display.setCursor(0,9);
+    display.print(ssid);
+    delay(5000);
+    display.clearDisplay();
   }
 }
 
@@ -43,15 +49,21 @@ void loop() {
   // Check WiFi Status
   if (WiFi.status() == WL_CONNECTED) {
     HTTPClient http;  //Object of class HTTPClient
-    http.begin("http://pegelonline.wsv.de");
+    http.begin("http://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/HAMBURG-ST.PAULI.json?includeTimeseries=true&includeCurrentMeasurement=true");
     int httpCode = http.GET();
+    Serial.print("http.GET() = ");
+    Serial.println(httpCode);
     //Check the returning code
     if (httpCode > 0) {
       // Parsing
       const size_t bufferSize = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(5) + JSON_OBJECT_SIZE(6) + JSON_OBJECT_SIZE(10) + 540;
       DynamicJsonBuffer jsonBuffer(bufferSize);
+      String payload;
 
-      const char* json = "{\"uuid\":\"d488c5cc-4de9-4631-8ce1-0db0e700b546\",\"number\":\"5952050\",\"shortname\":\"HAMBURG-ST.PAULI\",\"longname\":\"HAMBURG ST. PAULI\",\"km\":623.1,\"agency\":\"HAMBURG PORT AUTHORITY\",\"longitude\":9.969996726842329,\"latitude\":53.54568502657209,\"water\":{\"shortname\":\"ELBE\",\"longname\":\"ELBE\"},\"timeseries\":[{\"shortname\":\"W\",\"longname\":\"WASSERSTAND ROHDATEN\",\"unit\":\"cm\",\"equidistance\":1,\"currentMeasurement\":{\"timestamp\":\"2018-02-16T03:19:00+01:00\",\"value\":763,\"trend\":1,\"stateMnwMhw\":\"unknown\",\"stateNswHsw\":\"unknown\"},\"gaugeZero\":{\"unit\":\"m. ü. NHN\",\"value\":-5,\"validFrom\":\"2008-01-01\"}}]}";
+      //const char* json = "{\"uuid\":\"d488c5cc-4de9-4631-8ce1-0db0e700b546\",\"number\":\"5952050\",\"shortname\":\"HAMBURG-ST.PAULI\",\"longname\":\"HAMBURG ST. PAULI\",\"km\":623.1,\"agency\":\"HAMBURG PORT AUTHORITY\",\"longitude\":9.969996726842329,\"latitude\":53.54568502657209,\"water\":{\"shortname\":\"ELBE\",\"longname\":\"ELBE\"},\"timeseries\":[{\"shortname\":\"W\",\"longname\":\"WASSERSTAND ROHDATEN\",\"unit\":\"cm\",\"equidistance\":1,\"currentMeasurement\":{\"timestamp\":\"2018-02-16T03:19:00+01:00\",\"value\":763,\"trend\":1,\"stateMnwMhw\":\"unknown\",\"stateNswHsw\":\"unknown\"},\"gaugeZero\":{\"unit\":\"m. ü. NHN\",\"value\":-5,\"validFrom\":\"2008-01-01\"}}]}";
+      payload = http.getString();
+      char json[2048];
+      payload.toCharArray(json, sizeof(json));
 
       JsonObject& root = jsonBuffer.parseObject(json);
 
