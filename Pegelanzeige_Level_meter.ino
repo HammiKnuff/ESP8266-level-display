@@ -13,7 +13,6 @@
 #define OLED_RESET 0  // GPIO0
 Adafruit_SSD1306 display(OLED_RESET);
 
-#define langername longname
 // WiFi Parameters
 //**** Change setting for WIFI ******
 const char* ssid = "WIFI";
