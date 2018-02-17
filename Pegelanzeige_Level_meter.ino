@@ -13,18 +13,17 @@
 #define OLED_RESET 0  // GPIO0
 Adafruit_SSD1306 display(OLED_RESET);
 
-#define langername longname
 // WiFi Parameters
 //**** Change setting for WIFI ******
-const char* ssid = "WIFI NAME";
-const char* password = "WIFI PASSWORD";
+const char* ssid = "SSID";
+const char* password = "PASSWORD";
 
 void setup() {
 
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   display.clearDisplay();
   display.setTextColor(WHITE, BLACK);
-  display.setCursor(0,0);
+  display.setCursor(0, 0);
   display.display();
 
   Serial.begin(115200);
@@ -33,9 +32,9 @@ void setup() {
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
     Serial.println("Connecting...");
-    
+
     display.print("Connected to");
-    display.setCursor(0,9);
+    display.setCursor(0, 9);
     display.print(ssid);
     delay(5000);
     display.clearDisplay();
@@ -44,8 +43,8 @@ void setup() {
 
 void loop() {
 
-  //OLED   
-  
+  //OLED
+
   // Check WiFi Status
   if (WiFi.status() == WL_CONNECTED) {
     HTTPClient http;  //Object of class HTTPClient
@@ -60,7 +59,7 @@ void loop() {
       DynamicJsonBuffer jsonBuffer(bufferSize);
       String payload;
 
-      //const char* json = "{\"uuid\":\"d488c5cc-4de9-4631-8ce1-0db0e700b546\",\"number\":\"5952050\",\"shortname\":\"HAMBURG-ST.PAULI\",\"longname\":\"HAMBURG ST. PAULI\",\"km\":623.1,\"agency\":\"HAMBURG PORT AUTHORITY\",\"longitude\":9.969996726842329,\"latitude\":53.54568502657209,\"water\":{\"shortname\":\"ELBE\",\"longname\":\"ELBE\"},\"timeseries\":[{\"shortname\":\"W\",\"longname\":\"WASSERSTAND ROHDATEN\",\"unit\":\"cm\",\"equidistance\":1,\"currentMeasurement\":{\"timestamp\":\"2018-02-16T03:19:00+01:00\",\"value\":763,\"trend\":1,\"stateMnwMhw\":\"unknown\",\"stateNswHsw\":\"unknown\"},\"gaugeZero\":{\"unit\":\"m. ü. NHN\",\"value\":-5,\"validFrom\":\"2008-01-01\"}}]}";
+
       payload = http.getString();
       char json[2048];
       payload.toCharArray(json, sizeof(json));
@@ -95,25 +94,31 @@ void loop() {
       Serial.print(timeseries0_currentMeasurement_value);
       Serial.println(timeseries0_gaugeZero_unit);
       Serial.println(timeseries0_unit);
-//OLED
-display.display();
-display.setCursor(0,0);
-display.setTextSize(0);
-display.print(longname);
-display.setCursor(0,9);
-display.setTextSize(1);
-display.print(timeseries0_currentMeasurement_value); 
-display.setCursor(19,9);
-display.print(timeseries0_unit); 
-display.setCursor(35,9);
-display.print("NHN"); //units. json has umlauts problems
-display.setCursor(0,17);
-display.print(timeseries0_currentMeasurement_timestamp); 
+      //OLED
+
+      display.display();
+      display.setCursor(0, 0);
+      display.setTextSize(1);
+      display.print(longname);
+      
+      display.setCursor(0, 9);
+      display.setTextSize(2);
+      display.print(timeseries0_currentMeasurement_value);
+      display.setCursor(35, 16);
+      display.setTextSize(1);
+      display.print(timeseries0_unit);
+      display.setCursor(55, 9);
+      display.setTextSize(2);
+      display.print("NHN"); //units. json has umlauts problems
+      display.setCursor(10, 25);
+      display.setTextSize(0);
+      display.print(timeseries0_currentMeasurement_timestamp);
+
 
     }
     http.end();   //Close connection
   }
 
   // Delay
-  delay(2000);
+  delay(10000);
 }
